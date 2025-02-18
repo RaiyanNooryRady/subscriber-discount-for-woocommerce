@@ -37,6 +37,17 @@ function sdw_enqueue_scripts() {
 }
 add_action('wp_enqueue_scripts', 'sdw_enqueue_scripts');
 
+// Enqueue scripts for AJAX in admin panel
+function sdw_enqueue_admin_scripts() {
+    wp_enqueue_script('sdw-admin-script', plugin_dir_url(__FILE__) . 'admin-script.js', ['jquery'], null, true);
+    wp_localize_script('sdw-admin-script', 'sdw_ajax', [
+        'ajax_url' => admin_url('admin-ajax.php'),
+        'nonce' => wp_create_nonce('sdw_nonce')
+    ]);
+}
+add_action('admin_enqueue_scripts', 'sdw_enqueue_admin_scripts');
+
+
 // Shortcode for Subscription Form
 function sdw_subscription_form() {
     return '<form id="sdw-subscribe-form">
@@ -105,14 +116,23 @@ function sdw_admin_page() {
     global $wpdb;
     $table_name = $wpdb->prefix . 'subscriber_discounts';
     $subscribers = $wpdb->get_results("SELECT * FROM $table_name");
+
     echo '<h2>Subscriber List</h2>';
-    echo '<table><tr><th>ID</th><th>Email</th><th>Subscription Date</th></tr>';
+    echo '<table id="subscriber-table" style="border-collapse: collapse; width: 100%;">';
+    echo '<tr><th>ID</th><th>Email</th><th>Subscription Date</th><th>Action</th></tr>';
+    
     foreach ($subscribers as $subscriber) {
-        echo "<tr><td>{$subscriber->id}</td><td>{$subscriber->email}</td><td>{$subscriber->created_at}</td></tr>";
+        echo "<tr id='subscriber-{$subscriber->id}'>
+            <td>{$subscriber->id}</td>
+            <td>{$subscriber->email}</td>
+            <td>{$subscriber->created_at}</td>
+            <td><button class='delete-subscriber' data-id='{$subscriber->id}' style='background-color: red; color: white; border: none; padding: 5px; cursor: pointer;'>Delete</button></td>
+        </tr>";
     }
     echo '</table>';
     echo '<a href="'.admin_url('admin-post.php?action=sdw_export_csv').'" class="button button-primary">Download CSV</a>';
 }
+
 
 // Export Subscribers to CSV
 function sdw_export_csv() {
@@ -156,3 +176,26 @@ function sdw_settings_page_html() {
     submit_button();
     echo '</form>';
 }
+
+// Handle AJAX request to delete a subscriber
+function sdw_delete_subscriber() {
+    check_ajax_referer('sdw_nonce', 'nonce');
+
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error(['message' => 'Unauthorized request.']);
+    }
+
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'subscriber_discounts';
+    $subscriber_id = intval($_POST['subscriber_id']);
+
+    $deleted = $wpdb->delete($table_name, ['id' => $subscriber_id]);
+
+    if ($deleted) {
+        wp_send_json_success(['message' => 'Subscriber deleted successfully!']);
+    } else {
+        wp_send_json_error(['message' => 'Failed to delete subscriber.']);
+    }
+}
+
+add_action('wp_ajax_sdw_delete_subscriber', 'sdw_delete_subscriber');
