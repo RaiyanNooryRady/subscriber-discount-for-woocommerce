@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Subscriber Discount for WooCommerce
- * Plugin URI: https://yourwebsite.com
+ * Plugin URI: https:sparktech.agency
  * Description: Offer discounts to WooCommerce customers who subscribe via an email form.
  * Version: 1.0
  * Author: Your Name
@@ -40,8 +40,8 @@ add_action('wp_enqueue_scripts', 'sdw_enqueue_scripts');
 // Shortcode for Subscription Form
 function sdw_subscription_form() {
     return '<form id="sdw-subscribe-form">
-        <input type="email" id="sdw-email" placeholder="Enter your email" required>
-        <button type="submit">Subscribe</button>
+        <input type="email" id="sdw-email" placeholder="Write your email address here" required>
+        <button type="submit" style="margin-top: 10px; background-color: #18224A; color: white; border:none;">Subscribe Now</button>
         <p id="sdw-message"></p>
     </form>';
 }
