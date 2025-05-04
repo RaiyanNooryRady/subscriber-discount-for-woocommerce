@@ -4,8 +4,8 @@
  * Plugin URI: https:sparktech.agency
  * Description: Offer discounts to WooCommerce customers who subscribe via an email form.
  * Version: 1.0
- * Author: Your Name
- * Author URI: https://yourwebsite.com
+ * Author: Raiyan Noory Rady
+ * Author URI: https://www.linkedin.com/in/raiyan-noory-rady/
  * License: GPL2
  */
 
